@@ -1,69 +1,47 @@
-import React from "react";
-import Info from "./components/Info";
-import Form from "./components/Form";
-import Weather from "./components/Weather";
+import React from 'react';
+import styled from 'styled-components';
+import Header from './components/Header';
+import CurWeather from './components/CurWeather';
+import Favourites from './components/Favourites';
+import Preloader from './components/Preloader';
 
-const API_KEY = '7b6d16b9aad94f104b9310d42ef9ebf0';
+const Container = styled.div`
+  margin: 20px 40px;
 
-class App extends React.Component {
+button {
+    cursor: pointer;
+  }
+  `;
 
-    state = {
-        temp: undefined,
-        city: undefined,
-        country: undefined,
-        sunrise: undefined,
-        sunset: undefined,
-        error: undefined
+  class App extends React.Component {
+    constructor(props) {
+      super(props);
+      let userLocation = {
+        latitude: 59.9,
+        longitude: 30.3,
+      };
+      this.state = { userLocation: userLocation };
     }
-
-
-    gettingWeather = async (e) => {
-        e.preventDefault();
-        const city = e.target.elements.city.value;
-     
-        
-        if(city) {
-            const apiURL = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}`);
-            const data = await apiURL.json();
-            
-            let sunset = data.sys.sunset;
-            let date = new Date();
-            date.setTime(sunset);
-            let sunset_date = date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-            
-            let sunrise = data.sys.sunrise;
-            let date1 = new Date();
-            date1.setTime(sunrise);
-            let sunrise_date = date1.getHours() + ":" + date1.getMinutes() + ":" + date1.getSeconds();
-
-            this.setState({
-                temp: data.main.temp,
-                city: data.name,
-                country: data.sys.country,
-                sunrise: sunrise_date,
-                sunset: sunset_date,
-                error: ''
-            });
-        }
+  
+    componentDidMount() {
+      navigator.geolocation.getCurrentPosition((location) => {
+        this.setState({ userLocation: location.coords })
+      });
     }
-
+  
     render() {
-        return ( 
-            <div>
-                <Info />
-                <Form weatherMethod={this.gettingWeather}/>
-                <Weather
-                temp={this.state.temp}
-                city={this.state.city}
-                country={this.state.country}
-                sunrise={this.state.sunrise}
-                sunset={this.state.sunset}
-                error={this.state.error}
-                />
-            </div>
-
-        );
+  
+      const {loading} = this.props;
+      console.log(this.state.userLocation);
+      return (
+        <Container>
+          <Header/>
+          {loading
+            ? <Preloader/>
+            : <CurWeather/>}
+          <Favourites/>
+        </Container>
+      );
     }
-}
-
+  }
 export default App;
